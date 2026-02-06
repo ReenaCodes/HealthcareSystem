@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Doctor Management | MediFlow</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: #f4f7f6;
+      padding: 30px;
+      color: #333;
+    }
+
+    h2 {
+      color: #00695c;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    input, select {
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .btn-save {
+      background: #009688;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-save:hover {
+      background: #00796b;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th {
+      background: #f1f1f1;
+      padding: 15px;
+      text-align: left;
+      border-bottom: 2px solid #ddd;
+    }
+
+    td {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .badge {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .available {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .leave {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: red;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>👨‍⚕️ Doctor Management</h2>
+
+    <input id="searchDoctor" class="search-box"
+           placeholder="🔍 Search by Doctor Name or ID"
+           onkeyup="filterDoctors()">
+
+    <div class="form-grid">
+      <input id="dname" placeholder="Doctor Name">
+      <input id="dspecialization" placeholder="Specialization">
+      <input id="dphone" placeholder="Phone Number">
+      <select id="dstatus">
+        <option>Available</option>
+        <option>On Leave</option>
+      </select>
+      <button class="btn-save" onclick="addDoctor()">Add Doctor</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Specialization</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="doctorTable"></tbody>
+    </table>
+  </div>
+
+<script>
+  /* ---------- DATA ---------- */
+  let doctors = JSON.parse(localStorage.getItem("doctors")) || [];
+
+  /* ---------- ADD DOCTOR ---------- */
+  function addDoctor() {
+    if (!dname.value || !dspecialization.value) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    doctors.push({
+      id: "DOC-" + Math.floor(1000 + Math.random() * 9000),
+      name: dname.value,
+      specialization: dspecialization.value,
+      phone: dphone.value,
+      status: dstatus.value
+    });
+
+    saveDoctors();
+    dname.value = dspecialization.value = dphone.value = "";
+  }
+
+  /* ---------- DELETE DOCTOR ---------- */
+  function deleteDoctor(index) {
+    if (confirm("Are you sure you want to delete this doctor?")) {
+      doctors.splice(index, 1);
+      saveDoctors();
+    }
+  }
+
+  /* ---------- SAVE & RENDER ---------- */
+  function saveDoctors() {
+    localStorage.setItem("doctors", JSON.stringify(doctors));
+    renderDoctors(doctors);
+  }
+
+  function renderDoctors(list) {
+    let table = document.getElementById("doctorTable");
+    table.innerHTML = "";
+
+    list.forEach((d, i) => {
+      let statusClass = d.status === "Available" ? "available" : "leave";
+      table.innerHTML += `
+        <tr>
+          <td style="font-weight:bold; color:#009688">${d.id}</td>
+          <td>${d.name}</td>
+          <td>${d.specialization}</td>
+          <td><span class="badge ${statusClass}">${d.status}</span></td>
+          <td>
+            <button class="delete-btn" onclick="deleteDoctor(${i})">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  /* ---------- SEARCH ---------- */
+  function filterDoctors() {
+    let query = searchDoctor.value.toLowerCase();
+    let filtered = doctors.filter(d =>
+      d.name.toLowerCase().includes(query) ||
+      d.id.toLowerCase().includes(query)
+    );
+    renderDoctors(filtered);
+  }
+
+  /* ---------- INIT ---------- */
+  renderDoctors(doctors);
+</script>
+
+</body>
+</html>
