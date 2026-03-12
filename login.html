@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -194,42 +194,48 @@
 </head>
 <body>
 
-<div class="auth" id="loginPage">
+<!-- ---------- AUTH (LOGIN + REGISTER) ---------- -->
+<div class="auth" id="authPage">
   <div class="auth-box">
-    <i class="fa-solid fa-hospital main-icon"></i>
-    <h2>Secure Login</h2>
-    <input id="lEmail" placeholder="Email (admin@hms.com)">
-    <input id="lPass" type="password" placeholder="Password (1234)">
-    <button onclick="login()">Login to Dashboard</button>
-    <div class="switch" onclick="showRegister()">New Admin? Register Account</div>
+    <h2 id="authTitle">Secure Login</h2>
+
+    <!-- Login Form -->
+    <div id="loginForm">
+      <i class="fa-solid fa-hospital main-icon"></i>
+      <input id="lEmail" placeholder="Email (admin@hms.com)">
+      <input id="lPass" type="password" placeholder="Password (1234)">
+      <button onclick="login()">Login to Dashboard</button>
+      <div class="switch" onclick="toggleAuth()">New Admin? Register Account</div>
+    </div>
+
+    <!-- Registration Form -->
+    <div id="registerForm" style="display:none;">
+      <i class="fa-solid fa-user-plus main-icon"></i>
+      <input id="rName" placeholder="Full Name">
+      <select id="rRole">
+        <option value="">Select Role</option>
+        <option>Chief Administrator</option>
+        <option>Medical Director</option>
+        <option>Head Nurse</option>
+      </select>
+      <input id="rEmail" placeholder="Work Email">
+      <input id="rPass" type="password" placeholder="Create Password">
+      <button onclick="register()">Create Account</button>
+      <div class="switch" onclick="toggleAuth()">Already have an account? Login</div>
+    </div>
   </div>
 </div>
 
-<div class="auth" id="registerPage" style="display:none;">
-  <div class="auth-box">
-    <i class="fa-solid fa-user-plus main-icon"></i>
-    <h2>Register Admin</h2>
-    <input id="rName" placeholder="Full Name">
-    <select id="rRole">
-      <option value="">Select Role</option>
-      <option>Chief Administrator</option>
-      <option>Medical Director</option>
-      <option>Head Nurse</option>
-    </select>
-    <input id="rEmail" placeholder="Work Email">
-    <input id="rPass" type="password" placeholder="Create Password">
-    <button onclick="register()">Create Account</button>
-    <div class="switch" onclick="showLogin()">Already have an account? Login</div>
-  </div>
-</div>
-
+<!-- ---------- DASHBOARD ---------- -->
 <div class="dashboard" id="dashboard">
 
   <div class="sidebar">
     <h3><i class="fa-solid fa-heart-pulse"></i> MediFlow</h3>
     <a onclick="showModule('home')" id="link-home" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
     <a onclick="showModule('patient')" id="link-patient"><i class="fa-solid fa-bed"></i> Patient Mgmt</a>
-    <a onclick="showModule('doctor')" id="link-doctor"><i class="fa-solid fa-user-md"></i> Doctors</a>
+   <a href="doctor.html" id="link-doctor">
+<i class="fa-solid fa-user-md"></i> Doctors
+</a>
    <a href="appointment.html" id="link-appointment">
   <i class="fa-solid fa-calendar-check"></i> Appointments
 </a>
@@ -308,10 +314,7 @@
       </table>
     </div>
 
-    <div class="module" id="doctor">
-      <h2>Module 2 – Doctor Management</h2>
-      <p>Manage medical staff and schedules.</p>
-    </div>
+    
 
     <div class="module" id="appointment">
       <h2>Module 3 – Appointment Management</h2>
@@ -327,13 +330,20 @@ let patients = JSON.parse(localStorage.getItem("patients")) || [];
 let currentUser = JSON.parse(localStorage.getItem("activeUser")) || null;
 
 /* ---------- AUTH LOGIC ---------- */
-function showRegister(){
-  loginPage.style.display="none";
-  registerPage.style.display="flex";
-}
-function showLogin(){
-  registerPage.style.display="none";
-  loginPage.style.display="flex";
+function toggleAuth() {
+  let loginForm = document.getElementById("loginForm");
+  let registerForm = document.getElementById("registerForm");
+  let title = document.getElementById("authTitle");
+
+  if(loginForm.style.display === "none") {
+    loginForm.style.display = "block";
+    registerForm.style.display = "none";
+    title.innerText = "Secure Login";
+  } else {
+    loginForm.style.display = "none";
+    registerForm.style.display = "block";
+    title.innerText = "Register Admin";
+  }
 }
 
 function register(){
@@ -346,7 +356,7 @@ function register(){
 
   localStorage.setItem("user_account", JSON.stringify({name, email, pass, role}));
   alert("Registration Successful!");
-  showLogin();
+  toggleAuth(); // Switch to login
 }
 
 function login(){
@@ -354,16 +364,15 @@ function login(){
   let email = lEmail.value;
   let pass = lPass.value;
 
-  // Check against saved user OR default demo (admin@hms.com / 1234)
   if((email === "admin@hms.com" && pass === "1234") || (savedUser && savedUser.email === email && savedUser.pass === pass)){
     currentUser = savedUser || {name: "Administrator", role: "Superuser"};
     localStorage.setItem("activeUser", JSON.stringify(currentUser));
     
     document.getElementById("adminDisplayName").innerText = currentUser.name;
-    loginPage.style.display="none";
+    document.getElementById("authPage").style.display="none";
     dashboard.style.display="flex";
     updateStats();
-    showModule('home'); // STARTS AT HOME, NOT PATIENT
+    showModule('home'); 
   } else {
     alert("Invalid Credentials");
   }
@@ -376,11 +385,9 @@ function logout(){
 
 /* ---------- NAVIGATION ---------- */
 function showModule(id){
-  // Hide all
   document.querySelectorAll(".module").forEach(m=>m.style.display="none");
   document.querySelectorAll(".sidebar a").forEach(a=>a.classList.remove("active"));
   
-  // Show target
   document.getElementById(id).style.display="block";
   document.getElementById("link-"+id).classList.add("active");
 }
@@ -453,8 +460,6 @@ if(currentUser) {
 renderPatients(patients);
 updateStats();
 </script>
-
-
 
 </body>
 </html>
